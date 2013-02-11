@@ -47,7 +47,14 @@ public class RelativeLineNumberColumn extends LineNumberRulerColumn implements
         }
 
         int modelLine = JFaceTextUtil.modelLineToWidgetLine(fCachedTextViewer, line);
-        String lineStr = Integer.toString(Math.abs(currentLine - modelLine));
+        int relativeNumber = Math.abs(currentLine - modelLine);
+
+        String lineStr;
+        if (relativeNumber == 0) {
+            lineStr = Integer.toString(line + 1);
+        } else {
+            lineStr = Integer.toString(relativeNumber);
+        }
 
         return isAbsoluteNumberRulerEnabled ? " " + lineStr : lineStr;
     }
