@@ -19,7 +19,7 @@ What is this?
 
 Display a ruler with line number relative to your current line. The current line will have absolute line number. This is useful when you use Vrapper and want a Vim-like environment. You can look at the relative line number and execute vim commands faster, without having to count the lines.
 
-[![Screenshot]( https://github.com/thanhhaimai/relativenumberruler/tree/master/docs/Screenshot.png)]
+[![Screenshot](https://raw.github.com/thanhhaimai/relativenumberruler/master/docs/Screenshot.png)]
 
 Tested on
 ---------
