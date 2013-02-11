@@ -25,153 +25,159 @@ import org.eclipse.ui.texteditor.rulers.IContributedRulerColumn;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 
 @SuppressWarnings("restriction")
-public class RelativeLineNumberColumn extends LineNumberRulerColumn implements IContributedRulerColumn {
-	private static final String FG_COLOR_KEY = AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER_COLOR;
-	private static final String BG_COLOR_KEY = AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND;
-	private static final String USE_DEFAULT_BG_KEY = AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT;
-	private static final String ABS_RULER = AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER;
+public class RelativeLineNumberColumn extends LineNumberRulerColumn implements
+        IContributedRulerColumn {
+    private static final String FG_COLOR_KEY = AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER_COLOR;
+    private static final String BG_COLOR_KEY = AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND;
+    private static final String USE_DEFAULT_BG_KEY = AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT;
+    private static final String ABS_RULER = AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER;
 
-	private ITextEditor editor;
-	private RulerColumnDescriptor descriptor;
-	private StyledText fCachedTextWidget;
-	private ITextViewer fCachedTextViewer;
-	private boolean isAbsoluteNumberRulerEnabled;
-	private int lastDrawnLine = -1;
-	private int currentLine = 0;
+    private ITextEditor editor;
+    private RulerColumnDescriptor descriptor;
+    private StyledText fCachedTextWidget;
+    private ITextViewer fCachedTextViewer;
+    private boolean isAbsoluteNumberRulerEnabled;
+    private int lastDrawnLine = -1;
+    private int currentLine = 0;
 
-	@Override
-	protected String createDisplayString(int line) {
-		if (fCachedTextWidget == null || fCachedTextWidget.isDisposed()) return "";
+    @Override
+    protected String createDisplayString(int line) {
+        if (fCachedTextWidget == null || fCachedTextWidget.isDisposed()) {
+            return "";
+        }
 
-		int modelLine = JFaceTextUtil.modelLineToWidgetLine(fCachedTextViewer, line);
-		String lineStr = Integer.toString(Math.abs(currentLine - modelLine));
+        int modelLine = JFaceTextUtil.modelLineToWidgetLine(fCachedTextViewer, line);
+        String lineStr = Integer.toString(Math.abs(currentLine - modelLine));
 
-		return isAbsoluteNumberRulerEnabled ? " " + lineStr : lineStr;
-	}
+        return isAbsoluteNumberRulerEnabled ? " " + lineStr : lineStr;
+    }
 
-	@Override
-	protected int computeNumberOfDigits() {
-		return super.computeNumberOfDigits() + (isAbsoluteNumberRulerEnabled ? 1 : 0);
-	}
+    @Override
+    protected int computeNumberOfDigits() {
+        return super.computeNumberOfDigits() + (isAbsoluteNumberRulerEnabled ? 1 : 0);
+    }
 
-	@Override
-	public void redraw() {
-		lastDrawnLine = currentLine;
-		super.redraw();
-	}
+    @Override
+    public void redraw() {
+        lastDrawnLine = currentLine;
+        super.redraw();
+    }
 
-	@Override
-	public Control createControl(CompositeRuler parentRuler, Composite parentControl) {
-		initialize();
+    @Override
+    public Control createControl(CompositeRuler parentRuler, Composite parentControl) {
+        initialize();
 
-		fCachedTextViewer = parentRuler.getTextViewer();
-		fCachedTextWidget = fCachedTextViewer.getTextWidget();
-		fCachedTextWidget.addCaretListener(new CaretListener() {
-			public void caretMoved(CaretEvent event) {
-				currentLine = fCachedTextWidget.getLineAtOffset(event.caretOffset);
-				// ensure the ruler only gets redrawn when relative line number changes.
-				if (lastDrawnLine != currentLine) {
-					redraw();
-				}
-			}
-		});
+        fCachedTextViewer = parentRuler.getTextViewer();
+        fCachedTextWidget = fCachedTextViewer.getTextWidget();
+        fCachedTextWidget.addCaretListener(new CaretListener() {
+            public void caretMoved(CaretEvent event) {
+                currentLine = fCachedTextWidget.getLineAtOffset(event.caretOffset);
+                // ensure the ruler only gets redrawn when relative line number changes.
+                if (lastDrawnLine != currentLine) {
+                    redraw();
+                }
+            }
+        });
 
-		return super.createControl(parentRuler, parentControl);
-	}
+        return super.createControl(parentRuler, parentControl);
+    }
 
-	private void initialize() {
-		// read color preferences
-		final IPreferenceStore store = getPreferenceStore();
-		updateForegroundColor(store);
-		updateBackgroundColor(store);
-		updateAbsoluteNumberRulerEnabled(store);
+    private void initialize() {
+        // read color preferences
+        final IPreferenceStore store = getPreferenceStore();
+        updateForegroundColor(store);
+        updateBackgroundColor(store);
+        updateAbsoluteNumberRulerEnabled(store);
 
-		// listen to changes of color preferences, redraw if changed
-		PropertyEventDispatcher fDispatcher = new PropertyEventDispatcher(store);
+        // listen to changes of color preferences, redraw if changed
+        PropertyEventDispatcher fDispatcher = new PropertyEventDispatcher(store);
 
-		fDispatcher.addPropertyChangeListener(ABS_RULER, new IPropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent event) {
-				updateAbsoluteNumberRulerEnabled(store);
-				redraw();
-			}
-		});
-		fDispatcher.addPropertyChangeListener(FG_COLOR_KEY, new IPropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent event) {
-				updateForegroundColor(store);
-				redraw();
-			}
-		});
-		IPropertyChangeListener backgroundHandler= new IPropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent event) {
-				updateBackgroundColor(store);
-				redraw();
-			}
-		};
-		fDispatcher.addPropertyChangeListener(BG_COLOR_KEY, backgroundHandler);
-		fDispatcher.addPropertyChangeListener(USE_DEFAULT_BG_KEY, backgroundHandler);
-	}
+        fDispatcher.addPropertyChangeListener(ABS_RULER, new IPropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                updateAbsoluteNumberRulerEnabled(store);
+                redraw();
+            }
+        });
+        fDispatcher.addPropertyChangeListener(FG_COLOR_KEY, new IPropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                updateForegroundColor(store);
+                redraw();
+            }
+        });
+        IPropertyChangeListener backgroundHandler = new IPropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent event) {
+                updateBackgroundColor(store);
+                redraw();
+            }
+        };
+        fDispatcher.addPropertyChangeListener(BG_COLOR_KEY, backgroundHandler);
+        fDispatcher.addPropertyChangeListener(USE_DEFAULT_BG_KEY, backgroundHandler);
+    }
 
-	private void updateAbsoluteNumberRulerEnabled(IPreferenceStore store) {
-		isAbsoluteNumberRulerEnabled = store.getBoolean(ABS_RULER);
-	}
+    private void updateAbsoluteNumberRulerEnabled(IPreferenceStore store) {
+        isAbsoluteNumberRulerEnabled = store.getBoolean(ABS_RULER);
+    }
 
-	public RulerColumnDescriptor getDescriptor() {
-		return descriptor;
-	}
+    public RulerColumnDescriptor getDescriptor() {
+        return descriptor;
+    }
 
-	public void setDescriptor(RulerColumnDescriptor descriptor) {
-		this.descriptor = descriptor;
-	}
+    public void setDescriptor(RulerColumnDescriptor descriptor) {
+        this.descriptor = descriptor;
+    }
 
-	public void setEditor(ITextEditor editor) {
-		this.editor = editor;
-	}
+    public void setEditor(ITextEditor editor) {
+        this.editor = editor;
+    }
 
-	public ITextEditor getEditor() {
-		return editor;
-	}
+    public ITextEditor getEditor() {
+        return editor;
+    }
 
-	public void columnCreated() {
-	}
+    public void columnCreated() {
+    }
 
-	public void columnRemoved() {
-	}
+    public void columnRemoved() {
+    }
 
-	protected ISharedTextColors getSharedColors() {
-		return EditorsPlugin.getDefault().getSharedTextColors();
-	}
+    protected ISharedTextColors getSharedColors() {
+        return EditorsPlugin.getDefault().getSharedTextColors();
+    }
 
-	private IPreferenceStore getPreferenceStore() {
-		return EditorsUI.getPreferenceStore();
-	}
+    private IPreferenceStore getPreferenceStore() {
+        return EditorsUI.getPreferenceStore();
+    }
 
-	private void updateForegroundColor(IPreferenceStore store) {
-		RGB rgb=  getColorFromStore(store, FG_COLOR_KEY);
-		if (rgb == null)
-			rgb= new RGB(0, 0, 0);
-		ISharedTextColors sharedColors= getSharedColors();
-		setForeground(sharedColors.getColor(rgb));
-	}
+    private void updateForegroundColor(IPreferenceStore store) {
+        RGB rgb = getColorFromStore(store, FG_COLOR_KEY);
+        if (rgb == null) {
+            rgb = new RGB(0, 0, 0);
+        }
+        ISharedTextColors sharedColors = getSharedColors();
+        setForeground(sharedColors.getColor(rgb));
+    }
 
-	private void updateBackgroundColor(IPreferenceStore store) {
-		// background color: same as editor, or system default
-		RGB rgb;
-		if (store.getBoolean(USE_DEFAULT_BG_KEY))
-			rgb= null;
-		else
-			rgb= getColorFromStore(store, BG_COLOR_KEY);
-		ISharedTextColors sharedColors= getSharedColors();
-		setBackground(sharedColors.getColor(rgb));
-	}
+    private void updateBackgroundColor(IPreferenceStore store) {
+        // background color: same as editor, or system default
+        RGB rgb;
+        if (store.getBoolean(USE_DEFAULT_BG_KEY)) {
+            rgb = null;
+        } else {
+            rgb = getColorFromStore(store, BG_COLOR_KEY);
+        }
+        ISharedTextColors sharedColors = getSharedColors();
+        setBackground(sharedColors.getColor(rgb));
+    }
 
-	private static RGB getColorFromStore(IPreferenceStore store, String key) {
-		RGB rgb= null;
-		if (store.contains(key)) {
-			if (store.isDefault(key))
-				rgb= PreferenceConverter.getDefaultColor(store, key);
-			else
-				rgb= PreferenceConverter.getColor(store, key);
-		}
-		return rgb;
-	}
+    private static RGB getColorFromStore(IPreferenceStore store, String key) {
+        RGB rgb = null;
+        if (store.contains(key)) {
+            if (store.isDefault(key)) {
+                rgb = PreferenceConverter.getDefaultColor(store, key);
+            } else {
+                rgb = PreferenceConverter.getColor(store, key);
+            }
+        }
+        return rgb;
+    }
 }
