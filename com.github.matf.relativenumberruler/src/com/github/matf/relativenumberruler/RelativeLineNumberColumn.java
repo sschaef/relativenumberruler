@@ -78,7 +78,13 @@ public class RelativeLineNumberColumn extends LineNumberRulerColumn implements
         fCachedTextWidget = fCachedTextViewer.getTextWidget();
         fCachedTextWidget.addCaretListener(new CaretListener() {
             public void caretMoved(CaretEvent event) {
-                currentLine = fCachedTextWidget.getLineAtOffset(event.caretOffset);
+                int line = fCachedTextWidget.getLineAtOffset(event.caretOffset);
+                // When the debugger opens a new file `line` is zero. In this case
+                // we should not redraw anything.
+                if (line == 0)
+                  return;
+
+                currentLine = line;
                 // ensure the ruler only gets redrawn when relative line number changes.
                 if (lastDrawnLine != currentLine) {
                     redraw();
